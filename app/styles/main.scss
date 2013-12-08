@@ -90,7 +90,40 @@ body {
     }
 }
 
+$atom-width: 45px;
 
 .atom {
     position: absolute;
+    font-size: 40px;
+    height: $atom-width;
+    width: $atom-width;
+    text-align: center;
+    line-height: $atom-width;
+    vertical-align: middle;
+}
+
+.electron_cloud {
+    position: absolute;
+    left: $atom-width/2;
+    top: $atom-width/2;
+}
+
+$electron-spacing: 2px;
+$electron-position: $atom-width/2 + $electron-spacing;
+.electron {
+    position: absolute;
+    left: $electron-position;
+    top: 0;
+    transform-origin: -$electron-position 0;
+}
+
+$electron-size: 8px;
+.electron-dot {
+    width: $electron-size;
+    height: $electron-size;
+    border-radius: 20px;
+    background: black;
+    position: absolute;
+    left: -$electron-size/2;
+    top: -$electron-size/2;
 }
