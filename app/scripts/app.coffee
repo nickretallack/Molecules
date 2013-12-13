@@ -8,20 +8,25 @@ define ['vector2', 'jquery', 'hand'], (V,$,hand) ->
 		constructor: ({@proton_count, @symbol}) ->
 
 	class ValenceElectron
-		constructor: ({}) ->
+		constructor: ({@atom}) ->
 			@node = $ """<div class="electron"><div class="electron-dot"></div></div>"""
-			# @node.css V(30,0).as_css()
+			@node.on 'mousedown', ((event)=> @draw_bond(event))
+			@node.on 'mouseup', ((event) => @finish_bond(event))
+
+		draw_bond: (event) ->
+			event.stopPropagation()
+			@atom.level.draw_bond
+				item: @
+
+		finish_bond: (event) ->
+			event.stopPropagation()
+			@atom.level.finish_bond @
 
 		get_position: -> V.from_css @node.offset()
-			# offset = @node.offset()
-		 #  V offset.left, -offset.top
 
-		# 	@node.on 'mousedown', ((event)=> @start_drag(event))
-
-		# start_drag: (event) ->
-		# 	@level.draw_bond
-		# 		item: @
-		# 		offset: (V.from_event event).minus(@position)
+	class DrawingTarget
+		constructor: ({@position}) ->
+		get_position: -> @position
 
 	class Bond
 		constructor: ({@left, @right, @type}) ->
@@ -49,7 +54,7 @@ define ['vector2', 'jquery', 'hand'], (V,$,hand) ->
 
 			# create valence electrons
 			@valence_electrons = for electron_index in [0...@element.proton_count]
-				electron = new ValenceElectron
+				electron = new ValenceElectron atom:@
 				@electron_cloud.append electron.node
 				electron
 
@@ -63,7 +68,6 @@ define ['vector2', 'jquery', 'hand'], (V,$,hand) ->
 
 		set_position: (@position) ->
 			@node.css @position.as_css()
-
 
 		position_valence_electrons: ->
 			count = @valence_electrons.length
@@ -87,6 +91,7 @@ define ['vector2', 'jquery', 'hand'], (V,$,hand) ->
 				atom.level = @
 			for bond in @bonds
 				@node.append bond.node
+				bond.level = @
 
 			stop_drag = =>
 				console.log "WTF"
@@ -101,15 +106,33 @@ define ['vector2', 'jquery', 'hand'], (V,$,hand) ->
 		stop_drag: ->
 			console.log "UP"
 			@dragging = null
+			if @drawing
+				@drawing.node.remove()
+				@drawing = null
 
 		drag: (event) ->
 			if @dragging
 				mouse = V.from_event event
 				@dragging.item.set_position mouse.minus @dragging.offset
 				@update()
+			if @drawing
+				mouse = V.from_event event
+				@drawing.right.position = mouse
+				@drawing.set_position()
 
 		start_drag: (@dragging) ->
-			console.log "START DRAG"
+		draw_bond: ({item}) ->
+			@drawing = new Bond
+				left: item
+				right: new DrawingTarget position: item.get_position()
+			@node.append @drawing.node
+
+		finish_bond: (item) ->
+			if @drawing
+				@drawing.right = item
+				@bonds.push @drawing
+				@drawing = null
+				@update()
 
 	H1 = new Atom element:Hydrogen, position:V(100,100)
 	H2 = new Atom element:Hydrogen, position:V(200,100)

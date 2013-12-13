@@ -125,6 +125,7 @@ $electron-position: $atom-width/2 + $electron-spacing;
     left: 0;
     top: 0;
     width: 200px;
+    z-index:-1;
 }
 
 $electron-size: 8px;
