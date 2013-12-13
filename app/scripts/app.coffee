@@ -147,6 +147,7 @@ define ['vector2', 'jquery', 'hand'], (V,$,hand) ->
 					@remove_bond bond
 				@cutting.node.remove()
 				@cutting = null
+				@update()
 
 		drag: (event) ->
 			if @dragging
@@ -242,23 +243,44 @@ define ['vector2', 'jquery', 'hand'], (V,$,hand) ->
 
 		win_condition: ->
 			molecules = @get_molecules()
+			return @molecules_in_harmony molecules
+
+		molecules_in_harmony: (molecules) ->
 			for molecule in molecules
-				return false unless (
-					molecule.length is 2 and
-					molecule[0].element is molecule[1].element
-				)
 				for atom in molecule
 					bond_count = @count_bonds atom
 					return false unless atom.valence_electrons.length + bond_count == atom.element.desired_valence
-			true
+			return true
 
+	# Molecules
 
 	class Molecule
 		constructor: ({position}) ->
 			for atom in @atoms
 				atom.set_position atom.position.plus position
 
-	class Water extends Molecule
+	class HydrogenMolecule extends Molecule
+		constructor: ->
+			@H1 = new Atom element:Hydrogen, position:V(-50,0)
+			@H2 = new Atom element:Hydrogen, position:V(50,0)
+			@atoms = [@H1, @H2]
+			@bonds = [
+				(new Bond left:@H1.valence_electrons[0], right:@H2.valence_electrons[0])
+			]
+			super arguments[0]
+
+	class OxygenMolecule extends Molecule
+		constructor: ->
+			@O1 = new Atom element:Oxygen, position:V(-50,0)
+			@O2 = new Atom element:Oxygen, position:V(50,0)
+			@atoms = [@O1, @O2]
+			@bonds = [
+				(new Bond left:@O1.valence_electrons[1], right:@O2.valence_electrons[5])
+				(new Bond left:@O1.valence_electrons[2], right:@O2.valence_electrons[4])
+			]
+			super arguments[0]
+
+	class WaterMolecule extends Molecule
 		constructor: ->
 			@H1 = new Atom element:Hydrogen, position:V(-50,50)
 			@H2 = new Atom element:Hydrogen, position:V(50,50)
@@ -270,7 +292,23 @@ define ['vector2', 'jquery', 'hand'], (V,$,hand) ->
 			]
 			super arguments[0]
 
-	class BondHydrogenLevel extends Level
+	# Levels
+
+	class DuoLevel extends Level
+		win_condition: ->
+			molecules = @get_molecules()
+			return (@molecules_in_harmony molecules) and (@only_double_molecules molecules)
+
+		only_double_molecules: (molecules) ->
+			for molecule in molecules
+				return false unless (
+					molecule.length is 2 and
+					molecule[0].element is molecule[1].element
+				)
+			return true
+
+
+	class BondHydrogenLevel extends DuoLevel
 		constructor: ->
 			super
 				atoms: [
@@ -279,28 +317,126 @@ define ['vector2', 'jquery', 'hand'], (V,$,hand) ->
 				]
 				instructions: """
 				When two atoms share a valence electron, it's called a Covalent bond.
-				Draw a line from one electron to another to bond them.
+				Draw a line from one electron to bond these hydrogen atoms into a molecule.
 				"""
 
-	class Level1 extends Level
+	class BondMultilpeHydrogenLevel extends DuoLevel
 		constructor: ->
 			super
-				molecules:[
-					new Water position:V(150,200)
-					new Water position:V(500,240)
-					#new Water position:V(300,400)
-				]
 				atoms: [
-					#new Atom element:Oxygen, position: V(300,100)
+					new Atom element:Hydrogen, position: V(200, 100)
+					new Atom element:Hydrogen, position: V(400, 150)
+					new Atom element:Hydrogen, position: V(180, 200)
+					new Atom element:Hydrogen, position: V(300, 350)
+					new Atom element:Hydrogen, position: V(100, 100)
+					new Atom element:Hydrogen, position: V(500, 450)
 				]
-				instructions: "Make H2 and O2"
+				instructions: """
+				You can make two hydrogen atems into a stable molecule with just one bond.
+				Try bonding a few more of them.
+				"""
+
+	class BondOxygenLevel extends DuoLevel
+		constructor: ->
+			super
+				atoms: [
+					new Atom element:Oxygen, position: V(200, 100)
+					new Atom element:Oxygen, position: V(400, 150)
+				]
+				instructions: """
+				It takes two bonds to make an oxygen molecule.
+				"""
+
+	class BondMultilpeOxygenLevel extends DuoLevel
+		constructor: ->
+			super
+				atoms: [
+					new Atom element:Oxygen, position: V(200, 100)
+					new Atom element:Oxygen, position: V(400, 150)
+					new Atom element:Oxygen, position: V(300, 350)
+					new Atom element:Oxygen, position: V(400, 250)
+				]
+				instructions: """
+				Make some Oxygen molecules.
+				"""
+
+	class CuttingLevel extends Level
+		win_condition: ->
+			@bonds.length is 0
+
+	class CutHydrogenLevel extends CuttingLevel
+		constructor: ->
+			super
+				molecules: [
+					new HydrogenMolecule position: V(200,200)
+				]
+				instructions: """
+				Swipe across a bond to break it.
+				"""
+
+	class CutThingsLevel extends CuttingLevel
+		constructor: ->
+			super
+				molecules: [
+					new HydrogenMolecule position: V(150,100)
+					new HydrogenMolecule position: V(400,120)
+					new OxygenMolecule position: V(100,250)
+					new WaterMolecule position: V(300,300)
+				]
+				instructions: """
+				Break all the bonds!
+				"""
+
+	class CutWaterLevel extends DuoLevel
+		constructor: ->
+			super
+				molecules: [
+					new WaterMolecule position: V(100,200)
+					new WaterMolecule position: V(300,300)
+				]
+				instructions: """
+				Here's some water, aka H2O.  Turn it into hydrogen and oxygen molecules.
+				"""
+
+	class MakeWaterLevel extends Level
+		constructor: ->
+			super
+				molecules: [
+					new HydrogenMolecule position: V(150,150)
+					new HydrogenMolecule position: V(400,200)
+					new OxygenMolecule position: V(200,400)
+				]
+				instructions: """
+				Now make these molecules back into water again.
+				"""
+
+		win_condition: ->
+			molecules = @get_molecules()
+			return (@molecules_in_harmony molecules) and (@only_water_molecules molecules)
+
+		only_water_molecules: (molecules) ->
+			for molecule in molecules
+				return false unless molecule.length is 3
+				proton_counts = (atom.element.proton_count for atom in molecule)
+				proton_counts.sort()
+				return false unless (
+					proton_counts[0] is proton_counts[1] is 1 and
+					proton_counts[2] is 6
+				)
+			return true
+
+	class ThatsAllLevel extends Level
+		constructor: ->
+			super
+				instructions: """That's all the levels in the demo!  Buy the full game to play with Carbon and Nitrogen and other elements."""
+
+		win_condition: -> false
 
 	class Game
 		constructor: ({@levels}) ->
 			@node = $ """<div class="game"></div>"""
 
 			@win_message = $ """<div>You win! </div>"""
-			@win_message.hide()
 			@node.append @win_message
 
 			@advance_button = $ """<button>Next Level</button>"""
@@ -310,9 +446,11 @@ define ['vector2', 'jquery', 'hand'], (V,$,hand) ->
 			@advance_button.hide
 			for level in @levels
 				level.game = @
+
 			@advance()
 
 		advance: ->
+			@win_message.hide()
 			@current_level?.node.remove()
 			@current_level = @levels.shift()
 			@node.append @current_level.node
@@ -323,7 +461,14 @@ define ['vector2', 'jquery', 'hand'], (V,$,hand) ->
 
 	game = new Game levels:[
 		new BondHydrogenLevel
-		new Level1
+		new BondMultilpeHydrogenLevel
+		new BondOxygenLevel
+		new BondMultilpeOxygenLevel
+		new CutHydrogenLevel
+		new CutThingsLevel
+		new CutWaterLevel
+		new MakeWaterLevel
+		new ThatsAllLevel
 	]
 
 	window.addEventListener 'mouseup', ((event) -> game.current_level.stop_drag(event)), false
