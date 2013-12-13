@@ -131,14 +131,17 @@ $electron-position: $atom-width/2 + $electron-spacing;
 }
 
 $electron-size: 10px;
+$electron-padding: 3px;
+$effective-electron-size: $electron-size + 2*$electron-padding;
 .electron-dot {
-    width: $electron-size;
-    height: $electron-size;
-    border-radius: 20px;
+    width: $effective-electron-size;
+    height: $effective-electron-size;
+    border-radius: 50%;
     background: black;
+    border: $electron-padding solid white;
     position: absolute;
-    left: -$electron-size/2;
-    top: -$electron-size/2;
+    left: -$effective-electron-size/2;
+    top: -$effective-electron-size/2;
 }
 
 .level {
