@@ -98,9 +98,15 @@ define ['vector2', 'jquery', 'hand'], (V,$,hand) ->
 		results
 
 	class Level
-		constructor: ({@atoms, @bonds}) ->
+		constructor: ({@atoms, @bonds, @molecules}) ->
 			@atoms ?= []
 			@bonds ?= []
+
+			# import from molecules
+			for molecule in @molecules
+				@atoms = @atoms.concat molecule.atoms
+				@bonds = @bonds.concat molecule.bonds
+
 			@node = $ """<div class="level"></div>"""
 			for atom in @atoms
 				@node.append atom.node
@@ -201,16 +207,26 @@ define ['vector2', 'jquery', 'hand'], (V,$,hand) ->
 				@drawing = null
 				@update()
 
+	class Molecule
+		constructor: ({@atoms, @bonds, position}) ->
+			for atom in @atoms
+				atom.set_position atom.position.plus position
 
-	H1 = new Atom element:Hydrogen, position:V(100,200)
-	H2 = new Atom element:Hydrogen, position:V(200,200)
-	O1 = new Atom element:Oxygen, position:V(150,100)
-	Level1 = new Level
-		atoms:[H1, H2, O1]
-		bonds:[
-			(new Bond left:H1.valence_electrons[0], right:O1.valence_electrons[4])
-			(new Bond left:H2.valence_electrons[0], right:O1.valence_electrons[2])
-		] 
+	create_water = (position) ->
+		H1 = new Atom element:Hydrogen, position:V(100,200)
+		H2 = new Atom element:Hydrogen, position:V(200,200)
+		O1 = new Atom element:Oxygen, position:V(150,100)
+		new Molecule
+			position: position
+			atoms:[H1, H2, O1]
+			bonds:[
+				(new Bond left:H1.valence_electrons[0], right:O1.valence_electrons[4])
+				(new Bond left:H2.valence_electrons[0], right:O1.valence_electrons[2])
+			]
+
+	Level1 = new Level molecules:[create_water(V(0,0)), create_water(V(300,40))]
+
+	# Level2 = new Level
 
 
 	return Level1
