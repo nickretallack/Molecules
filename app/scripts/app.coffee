@@ -6,6 +6,7 @@ define ['vector2', 'jquery', 'hand'], (V,$,hand) ->
 
 	class Element
 		constructor: ({@proton_count, @symbol}) ->
+			@desired_valence = if @proton_count <= 2 then 2 else 8
 
 	class ValenceElectron
 		constructor: ({@atom}) ->
@@ -88,17 +89,9 @@ define ['vector2', 'jquery', 'hand'], (V,$,hand) ->
 		array.splice index, 1
 		undefined
 
-	get_atom_neigbors = (bonds, atom) ->
-		results = []
-		for bond in bonds
-			if bond.right.atom is atom
-				results.push bond.left.atom
-			else if bond.left.atom is atom
-				results.push bond.right.atom
-		results
-
 	class Level
-		constructor: ({@atoms, @bonds, @molecules}) ->
+		constructor: ({@atoms, @bonds, @molecules, @instructions}) ->
+			@won = false
 			@atoms ?= []
 			@bonds ?= []
 
@@ -107,7 +100,7 @@ define ['vector2', 'jquery', 'hand'], (V,$,hand) ->
 				@atoms = @atoms.concat molecule.atoms
 				@bonds = @bonds.concat molecule.bonds
 
-			@node = $ """<div class="level"></div>"""
+			@node = $ """<div class="level">#{@instructions}</div>"""
 			for atom in @atoms
 				@node.append atom.node
 				atom.level = @
@@ -116,12 +109,13 @@ define ['vector2', 'jquery', 'hand'], (V,$,hand) ->
 				bond.level = @
 
 			@node.on 'mousedown', ((event)=> @cut_bonds(event))
-			window.addEventListener 'mouseup', ((event)=>@stop_drag(event)), false
-			window.addEventListener 'mousemove', ((event)=>@drag(event)), false
 
 		update: ->
 			for bond in @bonds
 				bond.set_position()
+			if not @won and @win_condition()
+				@won = true
+				alert "You Win!"
 
 		remove_bond: (bond) ->
 			bond.node.remove()
@@ -184,15 +178,7 @@ define ['vector2', 'jquery', 'hand'], (V,$,hand) ->
 			@dragging.position = mouse
 
 			# what's this molecule?
-			found = [@dragging.item]
-			queue = [@dragging.item]
-			while queue.length
-				atom = queue.pop()
-				for neigbor in get_atom_neigbors @bonds, atom
-					if neigbor not in found
-						found.push neigbor
-						queue.push neigbor
-			@dragging.molecule = found
+			@dragging.molecule = @get_molecule @dragging.item
 
 		draw_bond: ({item}) ->
 			@drawing = new Bond
@@ -207,6 +193,53 @@ define ['vector2', 'jquery', 'hand'], (V,$,hand) ->
 				@drawing = null
 				@update()
 
+		count_bonds: (atom) ->
+			counter = 0
+			for bond in @bonds
+				if bond.left.atom is atom or bond.right.atom is atom
+					counter += 1
+			return counter
+
+		get_atom_neigbors: (atom) ->
+			results = []
+			for bond in @bonds
+				if bond.right.atom is atom
+					results.push bond.left.atom
+				else if bond.left.atom is atom
+					results.push bond.right.atom
+			return results
+
+		get_molecule: (atom) ->
+			found = [atom]
+			queue = [atom]
+			while queue.length
+				atom = queue.pop()
+				for neighbor in @get_atom_neigbors atom
+					if neighbor not in found
+						found.push neighbor
+						queue.push neighbor
+			return found
+
+		get_molecules: ->
+			found = []
+			molecules = []
+			for atom in @atoms
+				if atom not in found
+					molecule = [atom]
+					molecules.push molecule
+					found.push atom
+
+					queue = [atom]
+					while queue.length
+						atom = queue.pop()
+						for neighbor in @get_atom_neigbors atom
+							if neighbor not in found
+								found.push neighbor
+								queue.push neighbor
+								molecule.push neighbor
+			return molecules
+
+
 	class Molecule
 		constructor: ({position}) ->
 			for atom in @atoms
@@ -214,27 +247,47 @@ define ['vector2', 'jquery', 'hand'], (V,$,hand) ->
 
 	class Water extends Molecule
 		constructor: ->
-			H1 = new Atom element:Hydrogen, position:V(-50,50)
-			H2 = new Atom element:Hydrogen, position:V(50,50)
-			O1 = new Atom element:Oxygen, position:V(0,-50)
-			@atoms = [H1, H2, O1]
+			@H1 = new Atom element:Hydrogen, position:V(-50,50)
+			@H2 = new Atom element:Hydrogen, position:V(50,50)
+			@O1 = new Atom element:Oxygen, position:V(0,-50)
+			@atoms = [@H1, @H2, @O1]
 			@bonds = [
-				(new Bond left:H1.valence_electrons[0], right:O1.valence_electrons[4])
-				(new Bond left:H2.valence_electrons[0], right:O1.valence_electrons[2])
+				(new Bond left:@H1.valence_electrons[0], right:@O1.valence_electrons[4])
+				(new Bond left:@H2.valence_electrons[0], right:@O1.valence_electrons[2])
 			]
 			super arguments[0]
 
-	Level1 = new Level
-		molecules:[
-			new Water position:V(150,200)
-			new Water position:V(500,240)
-			new Water position:V(300,400)
-		]
-		atoms: [
-			new Atom element:Oxygen, position: V(300,100)
-		]
+	class Level1 extends Level
+		constructor: ->
+			super
+				molecules:[
+					new Water position:V(150,200)
+					new Water position:V(500,240)
+					#new Water position:V(300,400)
+				]
+				atoms: [
+					#new Atom element:Oxygen, position: V(300,100)
+				]
+				instructions: "Make H2 and O2"
+
+		win_condition: ->
+			molecules = @get_molecules()
+			for molecule in molecules
+				return false unless (
+					molecule.length is 2 and
+					molecule[0].element is molecule[1].element
+				)
+				for atom in molecule
+					bond_count = @count_bonds atom
+					return false unless atom.valence_electrons.length + bond_count == atom.element.desired_valence
+			true
+
+	current_level = new Level1
+
+	window.addEventListener 'mouseup', ((event) -> current_level.stop_drag(event)), false
+	window.addEventListener 'mousemove', ((event) -> current_level.drag(event)), false
 
 	# Level2 = new Level
 
 
-	return Level1
+	return current_level
