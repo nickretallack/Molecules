@@ -58,4 +58,7 @@ define ['underscore'], (_) ->
     Vector::minus = Vector::subtract
     V = -> new Vector arguments...
 
+    V.from_event = (event) -> V event.clientX, event.clientY
+    V.from_css = (css) -> V css.left, css.top
+
     return V
