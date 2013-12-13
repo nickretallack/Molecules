@@ -118,7 +118,7 @@ $electron-position: $atom-width/2 + $electron-spacing;
 }
 
 .bond {
-    border: 1px solid red;
+    border: 1px solid green;
     transform-origin: top left;
 
     position: absolute;
@@ -126,6 +126,10 @@ $electron-position: $atom-width/2 + $electron-spacing;
     top: 0;
     width: 200px;
     z-index:-1;
+
+    &.cutter {
+        border-color: red
+    }
 }
 
 $electron-size: 8px;

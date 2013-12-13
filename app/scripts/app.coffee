@@ -30,7 +30,7 @@ define ['vector2', 'jquery', 'hand'], (V,$,hand) ->
 
 	class Bond
 		constructor: ({@left, @right, @type}) ->
-			@node = $ """<div class="bond"></div>"""
+			@node = $ """<div class="bond #{@type}"></div>"""
 			@set_position()
 
 		set_position: ->
@@ -62,6 +62,7 @@ define ['vector2', 'jquery', 'hand'], (V,$,hand) ->
 			@node.on 'mousedown', ((event)=> @start_drag(event))
 
 		start_drag: (event) ->
+			event.stopPropagation()
 			@level.start_drag
 				item: @
 				offset: (V.from_event event).minus(@position)
@@ -168,7 +169,6 @@ define ['vector2', 'jquery', 'hand'], (V,$,hand) ->
 			@drawing = new Bond
 				left: item
 				right: new DrawingTarget position: item.get_position()
-				type: 'covalent'
 			@node.append @drawing.node
 
 		finish_bond: (item) ->
@@ -179,14 +179,14 @@ define ['vector2', 'jquery', 'hand'], (V,$,hand) ->
 				@update()
 
 
-	H1 = new Atom element:Hydrogen, position:V(100,100)
-	H2 = new Atom element:Hydrogen, position:V(200,100)
-	O1 = new Atom element:Oxygen, position:V(150,200)
+	H1 = new Atom element:Hydrogen, position:V(100,200)
+	H2 = new Atom element:Hydrogen, position:V(200,200)
+	O1 = new Atom element:Oxygen, position:V(150,100)
 	Level1 = new Level
 		atoms:[H1, H2, O1]
 		bonds:[
-			(new Bond left:H1.valence_electrons[0], right:O1.valence_electrons[0])
-			(new Bond left:H2.valence_electrons[0], right:O1.valence_electrons[1])
+			(new Bond left:H1.valence_electrons[0], right:O1.valence_electrons[4])
+			(new Bond left:H2.valence_electrons[0], right:O1.valence_electrons[2])
 		] 
 
 	class Game
