@@ -38,7 +38,7 @@ define ['vector2', 'jquery', 'hand'], (V,$,hand) ->
 			right = @right.get_position()
 			delta = right.minus left
 			angle = delta.angle()
-			@node.css left.as_css()
+			@node.css left.minus(V(1,1)).as_css()
 			@node.css
 				transform: "rotate(#{angle}rad)"
 				width: "#{delta.magnitude()}px"

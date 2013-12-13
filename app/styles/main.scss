@@ -118,12 +118,12 @@ $electron-position: $atom-width/2 + $electron-spacing;
 }
 
 .bond {
-    border: 1px solid green;
+    border: 2px solid green;
     transform-origin: top left;
 
     position: absolute;
-    left: 0;
-    top: 0;
+    left: -2px;
+    top: -2px;
     width: 200px;
     z-index:-1;
 
@@ -132,7 +132,7 @@ $electron-position: $atom-width/2 + $electron-spacing;
     }
 }
 
-$electron-size: 8px;
+$electron-size: 10px;
 .electron-dot {
     width: $electron-size;
     height: $electron-size;
