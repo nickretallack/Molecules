@@ -88,6 +88,15 @@ define ['vector2', 'jquery', 'hand'], (V,$,hand) ->
 		array.splice index, 1
 		undefined
 
+	get_atom_neigbors = (bonds, atom) ->
+		results = []
+		for bond in bonds
+			if bond.right.atom is atom
+				results.push bond.left.atom
+			else if bond.left.atom is atom
+				results.push bond.right.atom
+		results
+
 	class Level
 		constructor: ({@atoms, @bonds}) ->
 			@atoms ?= []
@@ -145,7 +154,11 @@ define ['vector2', 'jquery', 'hand'], (V,$,hand) ->
 		drag: (event) ->
 			if @dragging
 				mouse = V.from_event event
-				@dragging.item.set_position mouse.minus @dragging.offset
+				delta = @dragging.position.minus mouse
+				@dragging.position = mouse
+				for atom in @dragging.molecule
+					atom.set_position atom.position.minus delta
+				# @dragging.item.set_position @dragging.item.position  mouse.minus @dragging.offset
 				@update()
 			if @drawing
 				mouse = V.from_event event
@@ -165,6 +178,20 @@ define ['vector2', 'jquery', 'hand'], (V,$,hand) ->
 			@node.append @cutting.node
 
 		start_drag: (@dragging) ->
+			mouse = V.from_event event
+			@dragging.position = mouse
+
+			# what's this molecule?
+			found = [@dragging.item]
+			queue = [@dragging.item]
+			while queue.length
+				atom = queue.pop()
+				for neigbor in get_atom_neigbors @bonds, atom
+					if neigbor not in found
+						found.push neigbor
+						queue.push neigbor
+			@dragging.molecule = found
+
 		draw_bond: ({item}) ->
 			@drawing = new Bond
 				left: item
