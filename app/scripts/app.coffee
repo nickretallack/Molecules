@@ -81,6 +81,12 @@ define ['vector2', 'jquery', 'hand'], (V,$,hand) ->
 	Hydrogen = new Element proton_count:1, symbol:'H'
 	Oxygen = new Element proton_count:6, symbol:'O'
 
+	in_bounds = (value) -> 0 <= value <= 1
+	remove_from_array = (array, item) ->
+		index = array.indexOf item
+		array.splice index, 1
+		undefined
+
 	class Level
 		constructor: ({@atoms, @bonds}) ->
 			@atoms ?= []
@@ -96,6 +102,7 @@ define ['vector2', 'jquery', 'hand'], (V,$,hand) ->
 			stop_drag = =>
 				console.log "WTF"
 
+			@node.on 'mousedown', ((event)=> @cut_bonds(event))
 			window.addEventListener 'mouseup', ((event)=>@stop_drag(event)), false
 			window.addEventListener 'mousemove', ((event)=>@drag(event)), false
 
@@ -103,12 +110,36 @@ define ['vector2', 'jquery', 'hand'], (V,$,hand) ->
 			for bond in @bonds
 				bond.set_position()
 
+		remove_bond: (bond) ->
+			bond.node.remove()
+			remove_from_array @bonds, bond
+
 		stop_drag: ->
 			console.log "UP"
 			@dragging = null
 			if @drawing
 				@drawing.node.remove()
 				@drawing = null
+			if @cutting #q
+				cut_bonds = []
+				cut_left = @cutting.left.get_position()
+				cut_delta = @cutting.right.get_position().minus cut_left #s
+				for bond in @bonds #p
+					bond_left = bond.left.get_position()
+					bond_delta = bond.right.get_position().minus bond_left #r
+					left_delta = cut_left.minus bond_left #q-p
+					delta_cross = bond_delta.cross2d cut_delta #r x s
+					if delta_cross
+						cut_cross = left_delta.cross2d cut_delta #q-p x s
+						bond_cross = left_delta.cross2d bond_delta #q-p x r
+						cut_intercept = cut_cross / delta_cross
+						bond_intercept = bond_cross / delta_cross
+						if (in_bounds cut_intercept) and (in_bounds bond_intercept)
+							cut_bonds.push bond
+				for bond in cut_bonds
+					@remove_bond bond
+				@cutting.node.remove()
+				@cutting = null
 
 		drag: (event) ->
 			if @dragging
@@ -119,12 +150,25 @@ define ['vector2', 'jquery', 'hand'], (V,$,hand) ->
 				mouse = V.from_event event
 				@drawing.right.position = mouse
 				@drawing.set_position()
+			if @cutting
+				mouse = V.from_event event
+				@cutting.right.position = mouse
+				@cutting.set_position()
+
+		cut_bonds: (event) ->
+			mouse = V.from_event event
+			@cutting = new Bond
+				left: new DrawingTarget position:mouse
+				right: new DrawingTarget position:mouse
+				type: 'cutter'
+			@node.append @cutting.node
 
 		start_drag: (@dragging) ->
 		draw_bond: ({item}) ->
 			@drawing = new Bond
 				left: item
 				right: new DrawingTarget position: item.get_position()
+				type: 'covalent'
 			@node.append @drawing.node
 
 		finish_bond: (item) ->
@@ -133,6 +177,7 @@ define ['vector2', 'jquery', 'hand'], (V,$,hand) ->
 				@bonds.push @drawing
 				@drawing = null
 				@update()
+
 
 	H1 = new Atom element:Hydrogen, position:V(100,100)
 	H2 = new Atom element:Hydrogen, position:V(200,100)

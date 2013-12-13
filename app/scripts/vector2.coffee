@@ -50,6 +50,9 @@ define ['underscore'], (_) ->
         angle: ->
             Math.atan2 @y, @x
 
+        cross2d: (vector) ->
+            @x*vector.y - @y*vector.x
+
         as_css: ->
             left:@x
             top:@y
