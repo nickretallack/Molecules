@@ -208,23 +208,31 @@ define ['vector2', 'jquery', 'hand'], (V,$,hand) ->
 				@update()
 
 	class Molecule
-		constructor: ({@atoms, @bonds, position}) ->
+		constructor: ({position}) ->
 			for atom in @atoms
 				atom.set_position atom.position.plus position
 
-	create_water = (position) ->
-		H1 = new Atom element:Hydrogen, position:V(100,200)
-		H2 = new Atom element:Hydrogen, position:V(200,200)
-		O1 = new Atom element:Oxygen, position:V(150,100)
-		new Molecule
-			position: position
-			atoms:[H1, H2, O1]
-			bonds:[
+	class Water extends Molecule
+		constructor: ->
+			H1 = new Atom element:Hydrogen, position:V(-50,50)
+			H2 = new Atom element:Hydrogen, position:V(50,50)
+			O1 = new Atom element:Oxygen, position:V(0,-50)
+			@atoms = [H1, H2, O1]
+			@bonds = [
 				(new Bond left:H1.valence_electrons[0], right:O1.valence_electrons[4])
 				(new Bond left:H2.valence_electrons[0], right:O1.valence_electrons[2])
 			]
+			super arguments[0]
 
-	Level1 = new Level molecules:[create_water(V(0,0)), create_water(V(300,40))]
+	Level1 = new Level
+		molecules:[
+			new Water position:V(150,200)
+			new Water position:V(500,240)
+			new Water position:V(300,400)
+		]
+		atoms: [
+			new Atom element:Oxygen, position: V(300,100)
+		]
 
 	# Level2 = new Level
 
