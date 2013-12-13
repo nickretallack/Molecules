@@ -109,9 +109,6 @@ define ['vector2', 'jquery', 'hand'], (V,$,hand) ->
 				@node.append bond.node
 				bond.level = @
 
-			stop_drag = =>
-				console.log "WTF"
-
 			@node.on 'mousedown', ((event)=> @cut_bonds(event))
 			window.addEventListener 'mouseup', ((event)=>@stop_drag(event)), false
 			window.addEventListener 'mousemove', ((event)=>@drag(event)), false
@@ -125,7 +122,6 @@ define ['vector2', 'jquery', 'hand'], (V,$,hand) ->
 			remove_from_array @bonds, bond
 
 		stop_drag: ->
-			console.log "UP"
 			@dragging = null
 			if @drawing
 				@drawing.node.remove()
@@ -215,8 +211,6 @@ define ['vector2', 'jquery', 'hand'], (V,$,hand) ->
 			(new Bond left:H1.valence_electrons[0], right:O1.valence_electrons[4])
 			(new Bond left:H2.valence_electrons[0], right:O1.valence_electrons[2])
 		] 
-
-	class Game
 
 
 	return Level1
