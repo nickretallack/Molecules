@@ -90,15 +90,16 @@ define ['vector2', 'jquery', 'hand'], (V,$,hand) ->
 		undefined
 
 	class Level
-		constructor: ({@atoms, @bonds, @molecules, @instructions}) ->
+		constructor: ({@atoms, @bonds, molecules, @instructions}) ->
 			@won = false
 			@atoms ?= []
 			@bonds ?= []
 
 			# import from molecules
-			for molecule in @molecules
-				@atoms = @atoms.concat molecule.atoms
-				@bonds = @bonds.concat molecule.bonds
+			if molecules
+				for molecule in molecules
+					@atoms = @atoms.concat molecule.atoms
+					@bonds = @bonds.concat molecule.bonds
 
 			@node = $ """<div class="level">#{@instructions}</div>"""
 			for atom in @atoms
@@ -115,7 +116,7 @@ define ['vector2', 'jquery', 'hand'], (V,$,hand) ->
 				bond.set_position()
 			if not @won and @win_condition()
 				@won = true
-				alert "You Win!"
+				@game.won_level()
 
 		remove_bond: (bond) ->
 			bond.node.remove()
@@ -239,6 +240,18 @@ define ['vector2', 'jquery', 'hand'], (V,$,hand) ->
 								molecule.push neighbor
 			return molecules
 
+		win_condition: ->
+			molecules = @get_molecules()
+			for molecule in molecules
+				return false unless (
+					molecule.length is 2 and
+					molecule[0].element is molecule[1].element
+				)
+				for atom in molecule
+					bond_count = @count_bonds atom
+					return false unless atom.valence_electrons.length + bond_count == atom.element.desired_valence
+			true
+
 
 	class Molecule
 		constructor: ({position}) ->
@@ -257,6 +270,18 @@ define ['vector2', 'jquery', 'hand'], (V,$,hand) ->
 			]
 			super arguments[0]
 
+	class BondHydrogenLevel extends Level
+		constructor: ->
+			super
+				atoms: [
+					new Atom element:Hydrogen, position: V(200, 100)
+					new Atom element:Hydrogen, position: V(400, 150)
+				]
+				instructions: """
+				When two atoms share a valence electron, it's called a Covalent bond.
+				Draw a line from one electron to another to bond them.
+				"""
+
 	class Level1 extends Level
 		constructor: ->
 			super
@@ -270,24 +295,38 @@ define ['vector2', 'jquery', 'hand'], (V,$,hand) ->
 				]
 				instructions: "Make H2 and O2"
 
-		win_condition: ->
-			molecules = @get_molecules()
-			for molecule in molecules
-				return false unless (
-					molecule.length is 2 and
-					molecule[0].element is molecule[1].element
-				)
-				for atom in molecule
-					bond_count = @count_bonds atom
-					return false unless atom.valence_electrons.length + bond_count == atom.element.desired_valence
-			true
+	class Game
+		constructor: ({@levels}) ->
+			@node = $ """<div class="game"></div>"""
 
-	current_level = new Level1
+			@win_message = $ """<div>You win! </div>"""
+			@win_message.hide()
+			@node.append @win_message
 
-	window.addEventListener 'mouseup', ((event) -> current_level.stop_drag(event)), false
-	window.addEventListener 'mousemove', ((event) -> current_level.drag(event)), false
+			@advance_button = $ """<button>Next Level</button>"""
+			@win_message.append @advance_button
 
-	# Level2 = new Level
+			@advance_button.on 'click', => @advance()
+			@advance_button.hide
+			for level in @levels
+				level.game = @
+			@advance()
 
+		advance: ->
+			@current_level?.node.remove()
+			@current_level = @levels.shift()
+			@node.append @current_level.node
+			setTimeout @current_level.update(), 0
 
-	return current_level
+		won_level: ->
+			@win_message.show()
+
+	game = new Game levels:[
+		new BondHydrogenLevel
+		new Level1
+	]
+
+	window.addEventListener 'mouseup', ((event) -> game.current_level.stop_drag(event)), false
+	window.addEventListener 'mousemove', ((event) -> game.current_level.drag(event)), false
+
+	return game
