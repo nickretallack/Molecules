@@ -94,6 +94,10 @@ define ['vector2', 'jquery', 'hand'], (V,$,hand) ->
 			window.addEventListener 'mouseup', ((event)=>@stop_drag(event)), false
 			window.addEventListener 'mousemove', ((event)=>@drag(event)), false
 
+		update: ->
+			for bond in @bonds
+				bond.set_position()
+
 		stop_drag: ->
 			console.log "UP"
 			@dragging = null
@@ -102,9 +106,7 @@ define ['vector2', 'jquery', 'hand'], (V,$,hand) ->
 			if @dragging
 				mouse = V.from_event event
 				@dragging.item.set_position mouse.minus @dragging.offset
-				console.log "Drag"
-				for bond in @bonds
-					bond.set_position()
+				@update()
 
 		start_drag: (@dragging) ->
 			console.log "START DRAG"
