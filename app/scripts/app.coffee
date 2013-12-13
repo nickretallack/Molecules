@@ -1,4 +1,4 @@
-define ['vector2', 'jquery', 'hand'], (V,$,hand) ->
+define ['vector2', 'jquery'], (V,$) ->
 	"use strict"
 
 	class Positionable
