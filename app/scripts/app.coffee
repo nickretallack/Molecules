@@ -26,7 +26,6 @@ define ['vector2', 'jquery', 'hand'], (V,$,hand) ->
 	class Bond
 		constructor: ({@left, @right, @type}) ->
 			@node = $ """<div class="bond"></div>"""
-			@left.node.append @node
 			@set_position()
 
 		set_position: ->
@@ -34,6 +33,7 @@ define ['vector2', 'jquery', 'hand'], (V,$,hand) ->
 			right = @right.get_position()
 			delta = right.minus left
 			angle = delta.angle()
+			@node.css left.as_css()
 			@node.css
 				transform: "rotate(#{angle}rad)"
 				width: "#{delta.magnitude()}px"
@@ -85,6 +85,8 @@ define ['vector2', 'jquery', 'hand'], (V,$,hand) ->
 			for atom in @atoms
 				@node.append atom.node
 				atom.level = @
+			for bond in @bonds
+				@node.append bond.node
 
 			stop_drag = =>
 				console.log "WTF"

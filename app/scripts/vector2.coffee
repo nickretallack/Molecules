@@ -38,10 +38,6 @@ define ['underscore'], (_) ->
         subtract: (vector) ->
             @add(vector.invert())
 
-        as_css: ->
-            left:@x
-            top:@y
-
         equals: (vector) ->
             _.all _.zip(@components(), vector.components()), (item) -> item[0] == item[1]
 
@@ -53,6 +49,12 @@ define ['underscore'], (_) ->
 
         angle: ->
             Math.atan2 @y, @x
+
+        as_css: ->
+            left:@x
+            top:@y
+
+        as_px: -> "#{@x}px #{@y}px"
 
     Vector::plus = Vector::add
     Vector::minus = Vector::subtract
