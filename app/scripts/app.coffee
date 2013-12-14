@@ -430,7 +430,7 @@ define ['vector2', 'jquery'], (V,$) ->
 	class ThatsAllLevel extends Level
 		constructor: ->
 			super
-				instructions: """That's all the levels in the demo!  Buy the full game to play with Carbon and Nitrogen and other elements."""
+				instructions: """That's all the levels in the demo!  In the full game you will get to play with Carbon and Nitrogen and other elements."""
 
 		win_condition: -> false
 
