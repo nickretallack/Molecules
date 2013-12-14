@@ -316,8 +316,8 @@ define ['vector2', 'jquery'], (V,$) ->
 					new Atom element:Hydrogen, position: V(400, 150)
 				]
 				instructions: """
-				When two atoms share a valence electron, it's called a Covalent bond.
-				Draw a line from one electron to bond these hydrogen atoms into a molecule.
+				Hydrogen atoms have one valence electron, but they want to have two!
+				Draw a line between two electrons to make them share.
 				"""
 
 	class BondMultilpeHydrogenLevel extends DuoLevel
@@ -332,8 +332,9 @@ define ['vector2', 'jquery'], (V,$) ->
 					new Atom element:Hydrogen, position: V(500, 450)
 				]
 				instructions: """
-				You can make two hydrogen atems into a stable molecule with just one bond.
-				Try bonding a few more of them.
+				When atoms share valence electrons it's called a co-valent bond.
+				This is how molecules are formed.
+				Try bonding some more hydrogen atoms into H2 molecules.
 				"""
 
 	class BondOxygenLevel extends DuoLevel
@@ -344,7 +345,8 @@ define ['vector2', 'jquery'], (V,$) ->
 					new Atom element:Oxygen, position: V(400, 150)
 				]
 				instructions: """
-				It takes two bonds to make an oxygen molecule.
+				Oxygen molecules have six valence electrons, but they want to have eight!
+				Make them share two electrons so they can both be happy.
 				"""
 
 	class BondMultilpeOxygenLevel extends DuoLevel
@@ -357,7 +359,7 @@ define ['vector2', 'jquery'], (V,$) ->
 					new Atom element:Oxygen, position: V(400, 250)
 				]
 				instructions: """
-				Make some Oxygen molecules.
+				Make some more O2 molecules.
 				"""
 
 	class CuttingLevel extends Level
@@ -395,7 +397,7 @@ define ['vector2', 'jquery'], (V,$) ->
 					new WaterMolecule position: V(300,300)
 				]
 				instructions: """
-				Here's some water, aka H2O.  Turn it into hydrogen and oxygen molecules.
+				Here's some water, aka H2O.  Take it apart and turn it into H2 and O2 molecules.
 				"""
 
 	class MakeWaterLevel extends Level
