@@ -209,9 +209,10 @@ define ['vector2', 'jquery'], (V,$) ->
 					@bonds.push @drawing
 					@update_bonds()
 					@update_molecules()
+				else
+					@drawing.node.remove()
 
 				@drawing = null
-
 
 		count_bonds: (atom) ->
 			counter = 0
