@@ -81,8 +81,7 @@ define ['vector2', 'jquery'], (V,$) ->
 
 		update_valence: ->
 			@valence_is_satisfied = @valence_satisfied()
-			color = if @valence_is_satisfied then "green" else "black"
-			@node.css color:color
+			@node.toggleClass "valence-satisfied", @valence_is_satisfied
 
 		valence_satisfied: ->
 			bond_count = @level.count_bonds @
