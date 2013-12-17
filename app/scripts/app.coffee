@@ -244,6 +244,12 @@ define ['vector2', 'jquery'], (V,$) ->
 			return results
 
 		get_molecule: (atom) ->
+			for molecule in @molecules
+				if atom in molecule
+					return molecule
+
+		# Obsolete, but nifty
+		get_molecule_from_atom: (atom) ->
 			found = [atom]
 			queue = [atom]
 			while queue.length
