@@ -326,11 +326,10 @@ define ['vector2', 'jquery'], (V,$) ->
 
 	class DuoLevel extends Level
 		win_condition: ->
-			molecules = @get_molecules()
-			return (@molecules_in_harmony molecules) and (@only_double_molecules molecules)
+			return @molecules_in_harmony() and @only_double_molecules()
 
-		only_double_molecules: (molecules) ->
-			for molecule in molecules
+		only_double_molecules: ->
+			for molecule in @molecules
 				return false unless (
 					molecule.length is 2 and
 					molecule[0].element is molecule[1].element
@@ -443,11 +442,10 @@ define ['vector2', 'jquery'], (V,$) ->
 				"""
 
 		win_condition: ->
-			molecules = @get_molecules()
-			return (@molecules_in_harmony molecules) and (@only_water_molecules molecules)
+			return @molecules_in_harmony() and @only_water_molecules()
 
-		only_water_molecules: (molecules) ->
-			for molecule in molecules
+		only_water_molecules: ->
+			for molecule in @molecules
 				return false unless molecule.length is 3
 				proton_counts = (atom.element.proton_count for atom in molecule)
 				proton_counts.sort()
