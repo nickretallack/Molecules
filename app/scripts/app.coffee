@@ -278,10 +278,8 @@ define ['vector2', 'jquery'], (V,$) ->
 			return @molecules_in_harmony()
 
 		molecules_in_harmony: ->
-			for molecule in @molecules
-				for atom in molecule
-					bond_count = @count_bonds atom
-					return false unless atom.valence_electrons.length + bond_count == atom.element.desired_valence
+			for atom in @atoms
+				return false unless atom.valence_is_satisfied
 			return true
 
 	# Molecules
