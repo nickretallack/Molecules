@@ -79,7 +79,6 @@ define ['vector2', 'jquery'], (V,$) ->
 				angle = degree_step * index + start_angle
 				electron.node.css 'transform', "rotate(#{angle}deg)"
 
-
 	Hydrogen = new Element proton_count:1, symbol:'H'
 	Oxygen = new Element proton_count:6, symbol:'O'
 
@@ -192,13 +191,27 @@ define ['vector2', 'jquery'], (V,$) ->
 				right: new DrawingTarget position: item.get_position()
 			@node.append @drawing.node
 
-		finish_bond: (item) ->
+		finish_bond: (electron) ->
 			if @drawing
-				@drawing.right = item
-				@bonds.push @drawing
+				if electron.atom isnt @drawing.left.atom
+					@drawing.right = electron
+
+					# Remove conflicting bonds
+					bonds_to_remove = []
+					drawing_sides = [@drawing.left, @drawing.right]
+					for bond in @bonds
+						if bond.left in drawing_sides or bond.right in drawing_sides
+							bonds_to_remove.push bond
+					for bond in bonds_to_remove
+						@remove_bond bond
+
+					# Update
+					@bonds.push @drawing
+					@update_bonds()
+					@update_molecules()
+
 				@drawing = null
-				@update_bonds()
-				@update_molecules()
+
 
 		count_bonds: (atom) ->
 			counter = 0
