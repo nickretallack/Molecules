@@ -59,7 +59,7 @@ require ["app", "jquery"], (app, $) ->
 	"use strict"
 	
 	$(document.body).append app.node
-	setTimeout app.current_level.update(), 0
+	setTimeout app.current_level.update_bonds(), 0
 
 	# use app here
 	console.log app

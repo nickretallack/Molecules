@@ -110,10 +110,14 @@ define ['vector2', 'jquery'], (V,$) ->
 				bond.level = @
 
 			@node.on 'mousedown', ((event)=> @cut_bonds(event))
+			@update_molecules()
 
-		update: ->
+		update_bonds: ->
 			for bond in @bonds
 				bond.set_position()
+
+		update_molecules: ->
+			@molecules = @get_molecules()
 			if not @won and @win_condition()
 				@won = true
 				@game.won_level()
@@ -147,7 +151,7 @@ define ['vector2', 'jquery'], (V,$) ->
 					@remove_bond bond
 				@cutting.node.remove()
 				@cutting = null
-				@update()
+				@update_molecules()
 
 		drag: (event) ->
 			if @dragging
@@ -157,7 +161,7 @@ define ['vector2', 'jquery'], (V,$) ->
 				for atom in @dragging.molecule
 					atom.set_position atom.position.minus delta
 				# @dragging.item.set_position @dragging.item.position  mouse.minus @dragging.offset
-				@update()
+				@update_bonds()
 			if @drawing
 				mouse = V.from_event event
 				@drawing.right.position = mouse
@@ -193,7 +197,8 @@ define ['vector2', 'jquery'], (V,$) ->
 				@drawing.right = item
 				@bonds.push @drawing
 				@drawing = null
-				@update()
+				@update_bonds()
+				@update_molecules()
 
 		count_bonds: (atom) ->
 			counter = 0
@@ -242,11 +247,10 @@ define ['vector2', 'jquery'], (V,$) ->
 			return molecules
 
 		win_condition: ->
-			molecules = @get_molecules()
-			return @molecules_in_harmony molecules
+			return @molecules_in_harmony()
 
-		molecules_in_harmony: (molecules) ->
-			for molecule in molecules
+		molecules_in_harmony: ->
+			for molecule in @molecules
 				for atom in molecule
 					bond_count = @count_bonds atom
 					return false unless atom.valence_electrons.length + bond_count == atom.element.desired_valence
@@ -456,7 +460,7 @@ define ['vector2', 'jquery'], (V,$) ->
 			@current_level?.node.remove()
 			@current_level = @levels.shift()
 			@node.append @current_level.node
-			setTimeout @current_level.update(), 0
+			setTimeout @current_level.update_bonds(), 0
 
 		won_level: ->
 			@win_message.show()
