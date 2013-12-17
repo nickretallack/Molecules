@@ -79,6 +79,16 @@ define ['vector2', 'jquery'], (V,$) ->
 				angle = degree_step * index + start_angle
 				electron.node.css 'transform', "rotate(#{angle}deg)"
 
+		update_valence: ->
+			@valence_is_satisfied = @valence_satisfied()
+			color = if @valence_is_satisfied then "green" else "black"
+			@node.css color:color
+
+		valence_satisfied: ->
+			bond_count = @level.count_bonds @
+			@valence_electrons.length + bond_count == @element.desired_valence
+
+
 	Hydrogen = new Element proton_count:1, symbol:'H'
 	Oxygen = new Element proton_count:6, symbol:'O'
 
@@ -117,6 +127,10 @@ define ['vector2', 'jquery'], (V,$) ->
 
 		update_molecules: ->
 			@molecules = @get_molecules()
+
+			for atom in @atoms
+				atom.update_valence()
+
 			if not @won and @win_condition()
 				@won = true
 				@game.won_level()
