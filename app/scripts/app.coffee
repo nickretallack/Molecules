@@ -346,7 +346,7 @@ define ['vector2', 'jquery'], (V,$) ->
 
 	# Levels
 
-	class DuoLevel extends Level
+	class DiatomicLevel extends Level
 		win_condition: ->
 			return @molecules_in_harmony() and @only_double_molecules()
 
@@ -359,7 +359,7 @@ define ['vector2', 'jquery'], (V,$) ->
 			return true
 
 
-	class BondHydrogenLevel extends DuoLevel
+	class BondHydrogenLevel extends DiatomicLevel
 		constructor: ->
 			super
 				atoms: [
@@ -371,7 +371,7 @@ define ['vector2', 'jquery'], (V,$) ->
 				Draw a line between two electrons to make them share.
 				"""
 
-	class BondMultilpeHydrogenLevel extends DuoLevel
+	class BondMultilpeHydrogenLevel extends DiatomicLevel
 		constructor: ->
 			super
 				atoms: [
@@ -388,7 +388,7 @@ define ['vector2', 'jquery'], (V,$) ->
 				Try bonding some more hydrogen atoms into H2 molecules.
 				"""
 
-	class BondOxygenLevel extends DuoLevel
+	class BondOxygenLevel extends DiatomicLevel
 		constructor: ->
 			super
 				atoms: [
@@ -400,7 +400,7 @@ define ['vector2', 'jquery'], (V,$) ->
 				Make them share two electrons so they can both be happy.
 				"""
 
-	class BondMultilpeOxygenLevel extends DuoLevel
+	class BondMultilpeOxygenLevel extends DiatomicLevel
 		constructor: ->
 			super
 				atoms: [
@@ -440,7 +440,7 @@ define ['vector2', 'jquery'], (V,$) ->
 				Break all the bonds!
 				"""
 
-	class CutWaterLevel extends DuoLevel
+	class CutWaterLevel extends DiatomicLevel
 		constructor: ->
 			super
 				molecules: [
@@ -477,7 +477,7 @@ define ['vector2', 'jquery'], (V,$) ->
 				)
 			return true
 
-	class BondNitrogenLevel extends DuoLevel
+	class BondNitrogenLevel extends DiatomicLevel
 		constructor: ->
 			super
 				atoms: [
