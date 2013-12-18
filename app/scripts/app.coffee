@@ -92,7 +92,7 @@ define ['vector2', 'jquery'], (V,$) ->
 	Hydrogen = new Element proton_count:1, symbol:'H'
 	Oxygen = new Element proton_count:8, symbol:'O'
 	Nitrogen = new Element proton_count:7, symbol:'N'
-	Carbon = new Element proton_count:5, symbol:'C'
+	Carbon = new Element proton_count:6, symbol:'C'
 
 	in_bounds = (value) -> 0 <= value <= 1
 	remove_from_array = (array, item) ->
@@ -207,26 +207,40 @@ define ['vector2', 'jquery'], (V,$) ->
 				right: new DrawingTarget position: item.get_position()
 			@node.append @drawing.node
 
+		count_duo_bonds: (atom1, atom2) ->
+			counter = 0
+			atoms = [atom1, atom2]
+			for bond in @bonds
+				if bond.left.atom in atoms and bond.right.atom in atoms
+					counter += 1
+			counter
+
 		finish_bond: (electron) ->
 			if @drawing
-				if electron.atom isnt @drawing.left.atom
-					@drawing.right = electron
-
-					# Remove conflicting bonds
-					bonds_to_remove = []
-					drawing_sides = [@drawing.left, @drawing.right]
-					for bond in @bonds
-						if bond.left in drawing_sides or bond.right in drawing_sides
-							bonds_to_remove.push bond
-					for bond in bonds_to_remove
-						@remove_bond bond
-
-					# Update
-					@bonds.push @drawing
-					@update_bonds()
-					@update_molecules()
-				else
+				if electron.atom is @drawing.left.atom
+					# warn the player
+					console.log "Can't bond an atom to itself"
 					@drawing.node.remove()
+				else
+					@drawing.right = electron
+					if (@count_duo_bonds @drawing.right.atom, @drawing.left.atom) >= 3
+						# warn the player
+						console.log "Can't make quadruple bonds"
+						@drawing.node.remove()
+					else
+						# Remove conflicting bonds
+						bonds_to_remove = []
+						drawing_sides = [@drawing.left, @drawing.right]
+						for bond in @bonds
+							if bond.left in drawing_sides or bond.right in drawing_sides
+								bonds_to_remove.push bond
+						for bond in bonds_to_remove
+							@remove_bond bond
+
+						# Update
+						@bonds.push @drawing
+						@update_bonds()
+						@update_molecules()
 
 				@drawing = null
 
@@ -474,7 +488,7 @@ define ['vector2', 'jquery'], (V,$) ->
 				Nitrogen atoms have five valence electrons.  How many bonds will they need?
 				"""
 
-	class BondCarbonLevel
+	class BondCarbonLevel extends Level
 		constructor: ->
 			super
 				atoms: [
@@ -491,7 +505,7 @@ define ['vector2', 'jquery'], (V,$) ->
 	class ThatsAllLevel extends Level
 		constructor: ->
 			super
-				instructions: """That's all the levels in the demo!  In the full game you will get to play with Carbon and Nitrogen and other elements."""
+				instructions: """That's all the levels in the demo!  In the full game you'll learn to create other compounds such as amino acids."""
 
 		win_condition: -> false
 
@@ -532,6 +546,7 @@ define ['vector2', 'jquery'], (V,$) ->
 		new CutWaterLevel
 		new MakeWaterLevel
 		new BondNitrogenLevel
+		new BondCarbonLevel
 		new ThatsAllLevel
 	]
 
