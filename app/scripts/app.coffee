@@ -7,6 +7,7 @@ define ['vector2', 'jquery'], (V,$) ->
 	class Element
 		constructor: ({@proton_count, @symbol}) ->
 			@desired_valence = if @proton_count <= 2 then 2 else 8
+			@initial_valence = if @proton_count <= 2 then @proton_count else @proton_count - 2
 
 	class ValenceElectron
 		constructor: ({@atom}) ->
@@ -54,7 +55,7 @@ define ['vector2', 'jquery'], (V,$) ->
 			@node.append @electron_cloud
 
 			# create valence electrons
-			@valence_electrons = for electron_index in [0...@element.proton_count]
+			@valence_electrons = for electron_index in [0...@element.initial_valence]
 				electron = new ValenceElectron atom:@
 				@electron_cloud.append electron.node
 				electron
@@ -89,7 +90,9 @@ define ['vector2', 'jquery'], (V,$) ->
 
 
 	Hydrogen = new Element proton_count:1, symbol:'H'
-	Oxygen = new Element proton_count:6, symbol:'O'
+	Oxygen = new Element proton_count:8, symbol:'O'
+	Nitrogen = new Element proton_count:7, symbol:'N'
+	Carbon = new Element proton_count:5, symbol:'C'
 
 	in_bounds = (value) -> 0 <= value <= 1
 	remove_from_array = (array, item) ->
@@ -379,7 +382,7 @@ define ['vector2', 'jquery'], (V,$) ->
 					new Atom element:Oxygen, position: V(400, 150)
 				]
 				instructions: """
-				Oxygen molecules have six valence electrons, but they want to have eight!
+				Oxygen atoms have six valence electrons, but they want to have eight.
 				Make them share two electrons so they can both be happy.
 				"""
 
@@ -456,9 +459,34 @@ define ['vector2', 'jquery'], (V,$) ->
 				proton_counts.sort()
 				return false unless (
 					proton_counts[0] is proton_counts[1] is 1 and
-					proton_counts[2] is 6
+					proton_counts[2] is 8
 				)
 			return true
+
+	class BondNitrogenLevel extends DuoLevel
+		constructor: ->
+			super
+				atoms: [
+					new Atom element:Nitrogen, position: V(200, 100)
+					new Atom element:Nitrogen, position: V(400, 150)
+				]
+				instructions: """
+				Nitrogen atoms have five valence electrons.  How many bonds will they need?
+				"""
+
+	class BondCarbonLevel
+		constructor: ->
+			super
+				atoms: [
+					new Atom element:Carbon, position: V(200, 100)
+					new Atom element:Carbon, position: V(400, 150)
+					new Atom element:Hydrogen, position: V(300, 350)
+					new Atom element:Hydrogen, position: V(400, 250)
+				]
+				instructions: """
+				Carbon atoms have four valence electrons.  That means you need four covalent bonds to make them happy, right?
+				Unfortunately, quadruple bonds don't exist!  Use these Hydrogen atoms to pick up the slack.  
+				"""
 
 	class ThatsAllLevel extends Level
 		constructor: ->
@@ -503,6 +531,7 @@ define ['vector2', 'jquery'], (V,$) ->
 		new CutThingsLevel
 		new CutWaterLevel
 		new MakeWaterLevel
+		new BondNitrogenLevel
 		new ThatsAllLevel
 	]
 
